@@ -198,6 +198,68 @@ public class Enemy_4 : Enemy {
                 }
                 Destroy(other); // Destroy the ProjectileHero
                 break;
+
+            case "LaserHero":
+                Projectile l = other.GetComponent<Projectile>();
+                // IF this Enemy is off screen, don't damage it.
+                if (!bndCheck.isOnScreen)
+                {
+                    Destroy(other);
+                    break;
+                }
+
+                // Hurt this Enemy
+                GameObject gHit = coll.contacts[0].thisCollider.gameObject;
+                Part ptHit = FindPart(gHit);
+                if (ptHit == null) // If prtHit wasn't found...
+                {
+                    gHit = coll.contacts[0].otherCollider.gameObject;
+                    ptHit = FindPart(gHit);
+                }
+                // Check whether this part is still protected
+                if (ptHit.protectedBy != null)
+                {
+                    foreach (string s in ptHit.protectedBy)
+                    {
+                        // If one of the protecting parts hasn't been destroyed...
+                        if (!Destroyed(s))
+                        {
+                            // ...then don't damage this part yet
+                            //Destroy(other); // Destroy the ProjectileHero
+                            return; // return before damaging Enemy_4
+                        }
+                    }
+                }
+
+                // It's not protected, so make it take damage
+                // Get the damage amount from the Projectile.type and Main.W_DEFS
+                ptHit.health -= Main.GetWeaponDefinition(l.type).damageOnHit;
+                // Show damage on the part
+                ShowLocalizedDamage(ptHit.mat);
+                if (ptHit.health <= 0)
+                {
+                    // Instead of destroying this enemy, disable the damaged part
+                    ptHit.go.SetActive(false);
+                }
+                // Check to see if the whole ship is destroyed
+                bool allDestroyd = true; // Assume it is destroyed
+                foreach (Part prt in parts)
+                {
+                    if (!Destroyed(prt)) // If a part still exists...
+                    {
+                        allDestroyd = false; // ...change allDestroyed to false
+                        break; // & break out of the foreach loop
+                    }
+                }
+                if (allDestroyd) // If it IS completely destroyed...
+                {
+                    // ...tell the Main singleton that this ship was destroyed
+                    Main.S.ShipDestroyed(this);
+                    // Destroy this Enemy
+                    Destroy(this.gameObject);
+                }
+                //Destroy(other); // Destroy the ProjectileHero
+                break;
         }
     }
 }

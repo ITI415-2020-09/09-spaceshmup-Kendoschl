@@ -130,10 +130,16 @@ public class Weapon : MonoBehaviour {
                 p = MakeProjectile(); // Make left Projectile
                 p.transform.rotation = Quaternion.AngleAxis(-10, Vector3.back);
                 p.rigid.velocity = p.transform.rotation * vel;
+                p = MakeProjectile(); // Make right Projectile
+                p.transform.rotation = Quaternion.AngleAxis(15, Vector3.back);
+                p.rigid.velocity = p.transform.rotation * vel;
+                p = MakeProjectile(); // Make left Projectile
+                p.transform.rotation = Quaternion.AngleAxis(-15, Vector3.back);
+                p.rigid.velocity = p.transform.rotation * vel;
                 break;
 
             case WeaponType.laser:
-                p = MakeProjectile();
+                p = MakeLaser();
                 p.rigid.velocity = vel;
                 break;
         }
@@ -153,6 +159,27 @@ public class Weapon : MonoBehaviour {
             go.layer = LayerMask.NameToLayer("ProjectileEnemy");
         }
         go.transform.position = collar.transform.position;
+        go.transform.SetParent(PROJECTILE_ANCHOR, true);
+        Projectile p = go.GetComponent<Projectile>();
+        p.type = type;
+        lastShotTime = Time.time;
+        return p;
+    }
+
+    public Projectile MakeLaser()
+    {
+        GameObject go = Instantiate<GameObject>(def.projectilePrefab);
+        if (transform.parent.gameObject.tag == "Hero")
+        {
+            go.tag = "LaserHero";
+            go.layer = LayerMask.NameToLayer("LaserHero");
+        }
+        else
+        {
+            go.tag = "ProjectileEnemy";
+            go.layer = LayerMask.NameToLayer("ProjectileEnemy");
+        }
+        go.transform.position = collar.transform.position + new Vector3(0.0f, 15.0f, 0.0f);
         go.transform.SetParent(PROJECTILE_ANCHOR, true);
         Projectile p = go.GetComponent<Projectile>();
         p.type = type;

@@ -62,6 +62,11 @@ public class Enemy : MonoBehaviour {
         }
     }
 
+    void FixedUpdate()
+    {
+       
+    }
+
     public virtual void Move()
     {
         Vector3 tempPos = pos;
@@ -87,7 +92,6 @@ public class Enemy : MonoBehaviour {
                 ShowDamage();
                 // Get the damage amount from the Main WEAP_DICT
                 health -= Main.GetWeaponDefinition(p.type).damageOnHit;
-                health -= Main.GetWeaponDefinition(p.type).continuousDamage;
                 if (health <= 0)
                 {
                     // Tell the Main singleton that this ship was destroyed
@@ -102,8 +106,77 @@ public class Enemy : MonoBehaviour {
                 Destroy(otherGO);
                 break;
 
+
             default:
                 print("Enemy hit by non-ProjectileHero: " + otherGO.name);
+                break;
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        GameObject otherGO = other.gameObject;
+        switch (otherGO.tag)
+        {
+            case "LaserHero":
+                Projectile l = otherGO.GetComponent<Projectile>();
+                // If this Enemy is off screen, don't damage it.
+                if (!bndCheck.isOnScreen)
+                {
+                    Destroy(otherGO);
+                    break;
+                }
+
+                // Hurt this Enemy
+                ShowDamage();
+                // Get the damage amount from the Main WEAP_DICT
+                health -= Main.GetWeaponDefinition(l.type).continuousDamage;
+                if (health <= 0)
+                {
+                    // Tell the Main singleton that this ship was destroyed
+                    if (!notifiedOfDestruction)
+                    {
+                        Main.S.ShipDestroyed(this);
+                    }
+                    notifiedOfDestruction = true;
+                    // Destroy this enemy
+                    Destroy(this.gameObject);
+                }
+                //Destroy(otherGO);
+                break;
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        GameObject otherGO = other.gameObject;
+        switch (otherGO.tag)
+        {
+            case "LaserHero":
+                Projectile l = otherGO.GetComponent<Projectile>();
+                // If this Enemy is off screen, don't damage it.
+                if (!bndCheck.isOnScreen)
+                {
+                    Destroy(otherGO);
+                    break;
+                }
+
+                // Hurt this Enemy
+                ShowDamage();
+                // Get the damage amount from the Main WEAP_DICT
+                health -= Main.GetWeaponDefinition(l.type).continuousDamage;
+                if (health <= 0)
+                {
+                    // Tell the Main singleton that this ship was destroyed
+                    if (!notifiedOfDestruction)
+                    {
+                        Main.S.ShipDestroyed(this);
+                    }
+                    notifiedOfDestruction = true;
+                    // Destroy this enemy
+                    Destroy(this.gameObject);
+                }
+                //Destroy(otherGO);
                 break;
         }
     }
